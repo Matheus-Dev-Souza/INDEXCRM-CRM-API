@@ -1,16 +1,22 @@
-# Etapa 1: Build (Construção)
-FROM maven:3.8.5-openjdk-17 AS build
+# =========================
+# ETAPA 1 - BUILD
+# =========================
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+
 WORKDIR /app
-COPY . .
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Etapa 2: Run (Execução)
-# Trocamos 'openjdk:17-jdk-slim' por 'eclipse-temurin:17-jdk-alpine'
-FROM eclipse-temurin:17-jdk-alpine
-WORKDIR /app
 
-# ATENÇÃO: Aqui ajustamos o nome do arquivo para bater com o artifactId do seu pom.xml
-# O * (asterisco) ajuda a pegar o arquivo independente da versão exata
+# =========================
+# ETAPA 2 - RUN
+# =========================
+FROM eclipse-temurin:17-jdk-alpine
+
+WORKDIR /app
 COPY --from=build /app/target/index-crm-api-*.jar app.jar
 
 EXPOSE 8080
