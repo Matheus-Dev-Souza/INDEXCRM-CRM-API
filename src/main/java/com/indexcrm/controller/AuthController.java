@@ -23,6 +23,8 @@ public class AuthController {
     private UserRepository repository;
     @Autowired
     private TokenService tokenService;
+    @Autowired
+    private CompanyRepository companyRepository;
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid LoginDTO data){
@@ -45,6 +47,27 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
+}
+@PostMapping("/register")
+@Transactional // Importante: Ou salva tudo ou não salva nada
+public ResponseEntity register(@RequestBody @Valid RegisterDTO data){
+    if(this.repository.findByEmail(data.email()) != null) return ResponseEntity.badRequest().build();
+
+    // 1. Criar a Empresa primeiro
+    Company newCompany = new Company();
+    newCompany.setCorporateName(data.name() + " Company"); // Nome temporário
+    newCompany.setSubscriptionActive(true); // Começa ativa (Trial ou Free)
+    this.companyRepository.save(newCompany);
+
+    // 2. Criar o Usuário vinculado à Empresa
+    String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
+    
+    // Note que agora passamos a newCompany no construtor
+    User newUser = new User(data.name(), data.email(), encryptedPassword, UserRole.ADMIN, newCompany);
+
+    this.repository.save(newUser);
+
+    return ResponseEntity.ok().build();
 }
 
 // DTOs auxiliares

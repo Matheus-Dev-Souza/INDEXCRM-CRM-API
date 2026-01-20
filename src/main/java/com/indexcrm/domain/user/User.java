@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import com.indexcrm.domain.saas.Company;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +34,10 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
+    
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     public User(String name, String email, String password, UserRole role) {
         this.name = name;
