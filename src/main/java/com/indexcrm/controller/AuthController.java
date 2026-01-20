@@ -1,5 +1,8 @@
 package com.indexcrm.controller;
-
+import com.indexcrm.dto.request.LoginRequestDTO;
+import com.indexcrm.dto.request.RegisterRequestDTO;
+import com.indexcrm.dto.response.LoginResponseDTO;
+// ...
 import com.indexcrm.domain.user.User;
 import com.indexcrm.domain.user.UserRepository;
 import com.indexcrm.domain.user.UserRole;
@@ -33,7 +36,7 @@ public class AuthController {
 
         var token = tokenService.generateToken((User) auth.getPrincipal());
 
-        return ResponseEntity.ok(new LoginResponseDTO(token));
+        return ResponseEntity.ok(new LoginResponseDTO(token, userDto));
     }
 
     @PostMapping("/register")
