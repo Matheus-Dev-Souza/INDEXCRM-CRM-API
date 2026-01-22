@@ -1,67 +1,64 @@
-import io.jsonwebtoken.*;
+package com.indexcrm.security; // 1. O Package agora está no topo (Correto)
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import jakarta.servlet.http.HttpServletRequest; // 2. Usando Jakarta (Spring Boot 3)
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.security.core.Authentication;
-import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
 
-package com.indexcrm.security;
-
-
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Component
 public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
-    @Value("${app.jwtSecret:ChangeThisSecretKey}")
+    @Value("${api.security.token.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwtExpirationInMs:3600000}") // default 1 hour
-    private int jwtExpirationInMs;
-
+    // Adaptação para usar a biblioteca Auth0 (que você já tem)
     public String generateToken(Authentication authentication) {
-        String subject = authentication.getName();
-        return generateTokenForSubject(subject);
-    }
-
-    public String generateTokenForSubject(String subject) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
-
-        return Jwts.builder()
-                .setSubject(subject)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                .compact();
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
+            return JWT.create()
+                    .withIssuer("index-crm-api")
+                    .withSubject(authentication.getName())
+                    .withIssuedAt(Instant.now())
+                    .withExpiresAt(genExpirationDate())
+                    .sign(algorithm);
+        } catch (Exception exception) {
+            logger.error("Erro ao gerar token: ", exception);
+            return null;
+        }
     }
 
     public String getSubjectFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.getSubject();
+        try {
+            DecodedJWT jwt = JWT.decode(token);
+            return jwt.getSubject();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+            Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
+            JWT.require(algorithm)
+                    .withIssuer("index-crm-api")
+                    .build()
+                    .verify(authToken);
             return true;
-        } catch (SignatureException ex) {
-            logger.error("Invalid JWT signature");
-        } catch (MalformedJwtException ex) {
-            logger.error("Invalid JWT token");
-        } catch (ExpiredJwtException ex) {
-            logger.error("Expired JWT token");
-        } catch (UnsupportedJwtException ex) {
-            logger.error("Unsupported JWT token");
-        } catch (IllegalArgumentException ex) {
-            logger.error("JWT claims string is empty.");
+        } catch (JWTVerificationException ex) {
+            logger.error("Token inválido ou expirado: {}", ex.getMessage());
         }
         return false;
     }
@@ -72,5 +69,9 @@ public class JwtTokenProvider {
             return bearer.substring(7);
         }
         return null;
+    }
+
+    private Instant genExpirationDate(){
+        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
     }
 }
