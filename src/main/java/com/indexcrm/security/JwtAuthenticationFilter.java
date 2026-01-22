@@ -1,55 +1,58 @@
-import java.io.IOException;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+package com.indexcrm.security; // 1. O Package DEVE ser a primeira linha
+
+import com.indexcrm.domain.user.User;
+import com.indexcrm.repository.user.UserRepository;
+import com.indexcrm.service.TokenService;
+import jakarta.servlet.FilterChain; // 2. Usando Jakarta em vez de Javax
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-package com.indexcrm.security;
+import java.io.IOException;
 
-
-
-
-/**
- * Filtro que extrai o JWT do header Authorization, valida-o e popula o SecurityContext.
- * Depende de um JwtTokenProvider custom (métodos: validateToken(String), getUsernameFromToken(String)).
- */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final UserDetailsService userDetailsService;
+    @Autowired
+    private TokenService tokenService; // Adaptado para usar nosso serviço existente
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, UserDetailsService userDetailsService) {
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.userDetailsService = userDetailsService;
-    }
+    @Autowired
+    private UserRepository userRepository; // Adaptado para usar nosso repositório existente
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = resolveToken(request);
-            if (jwt != null && jwtTokenProvider.validateToken(jwt)) {
-                String username = jwtTokenProvider.getUsernameFromToken(jwt);
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+            
+            // Lógica adaptada: Nosso TokenService retorna o email (String), não boolean
+            if (jwt != null) {
+                String userEmail = tokenService.validateToken(jwt);
+                
+                // Se retornou um email válido e não está autenticado ainda
+                if (!userEmail.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    
+                    User userDetails = (User) userRepository.findByEmail(userEmail);
+                    
+                    if (userDetails != null) {
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
             }
         } catch (Exception ex) {
