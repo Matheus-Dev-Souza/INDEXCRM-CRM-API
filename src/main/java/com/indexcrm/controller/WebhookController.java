@@ -1,6 +1,5 @@
 package com.indexcrm.controller;
 
-public class PlanController {
-
+public class WebhookController {
     
 }

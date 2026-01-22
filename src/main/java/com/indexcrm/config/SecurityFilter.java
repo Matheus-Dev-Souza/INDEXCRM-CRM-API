@@ -1,5 +1,5 @@
 package com.indexcrm.config;
 
-public class SwaggerConfig {
+public class SecurityFilter {
     
 }

@@ -1,4 +1,4 @@
-package com.indexcrm.dto.request;
+package com.indexcrm.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
