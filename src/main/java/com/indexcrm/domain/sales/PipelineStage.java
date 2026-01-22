@@ -1,6 +1,5 @@
 package com.indexcrm.domain.sales;
 
-public class Lead {
-
+public class PipelineStage {
     
 }
