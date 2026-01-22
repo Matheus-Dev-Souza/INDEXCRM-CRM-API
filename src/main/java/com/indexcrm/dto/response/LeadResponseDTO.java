@@ -1,4 +1,4 @@
-package com.indexcrm.dto;
+package com.indexcrm.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

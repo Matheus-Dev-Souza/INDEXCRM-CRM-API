@@ -1,4 +1,4 @@
-package com.indexcrm.dto;
+package com.indexcrm.dto.response;
 
 public record CompanyResponseDTO(
     String id,
