@@ -11,24 +11,30 @@ import java.math.BigDecimal;
 @Table(name = "leads")
 public class Lead extends BaseEntity {
 
-    private String title;       // Ex: "Venda de Site para Padaria"
+    // --- DADOS DO NEGÓCIO ---
+    private String title;
     private String description;
-    private BigDecimal value;   // Valor da venda (Ex: 5000.00)
-    private String priority;    // LOW, MEDIUM, HIGH
+    private BigDecimal value;
+    private String priority;
+
+    // --- DADOS DO CLIENTE (Novos campos) ---
+    private String customerName; // Renomeei para customerName para não confundir com title
+    private String email;
+    private String phone;
 
     @ManyToOne
     @JoinColumn(name = "stage_id")
-    private PipelineStage stage; // Em qual coluna do Kanban ele está?
+    private PipelineStage stage;
 
     @ManyToOne
     @JoinColumn(name = "owner_id")
-    private User owner; // Quem é o vendedor responsável?
+    private User owner;
 
     @ManyToOne
     @JoinColumn(name = "company_id")
-    private Company company; // De qual empresa é esse lead?
+    private Company company;
 
-    // --- GETTERS E SETTERS MANUAIS ---
+    // --- GETTERS E SETTERS ---
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -41,6 +47,16 @@ public class Lead extends BaseEntity {
 
     public String getPriority() { return priority; }
     public void setPriority(String priority) { this.priority = priority; }
+
+    // Getters/Setters dos Novos Campos
+    public String getCustomerName() { return customerName; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
     public PipelineStage getStage() { return stage; }
     public void setStage(PipelineStage stage) { this.stage = stage; }
