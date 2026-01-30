@@ -12,40 +12,36 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailProvider {
 
-    @Autowired
+    // ALTERAÇÃO: required = false permite que o sistema suba sem configuração de e-mail
+    @Autowired(required = false) 
     private JavaMailSender mailSender;
 
-    // Pega o e-mail do remetente configurado no application.properties
-    @Value("${spring.mail.username}")
+    @Value("${spring.mail.username:no-reply@indexcrm.com}")
     private String senderEmail;
 
-    /**
-     * Envia e-mail formatado em HTML de forma assíncrona.
-     * @param to E-mail do destinatário
-     * @param subject Assunto
-     * @param htmlBody Conteúdo em HTML
-     */
     @Async
     public void sendHtmlEmail(String to, String subject, String htmlBody) {
+        // Se não tiver configuração, só avisa no log e não quebra o sistema
+        if (mailSender == null) {
+            System.out.println("⚠️ AVISO: E-mail não enviado (SMTP não configurado).");
+            System.out.println("Para: " + to + " | Assunto: " + subject);
+            return;
+        }
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
-
-            // O 'true' indica que é multipart (aceita anexo/html)
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(senderEmail);
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(htmlBody, true); // true = ativa HTML
+            helper.setText(htmlBody, true);
 
             mailSender.send(message);
-
             System.out.println("✅ Email enviado com sucesso para: " + to);
 
         } catch (MessagingException e) {
             System.err.println("❌ Falha ao enviar email: " + e.getMessage());
-            // Em produção, você pode não querer parar o sistema por falha no e-mail,
-            // mas é bom logar o erro.
         }
     }
 }
