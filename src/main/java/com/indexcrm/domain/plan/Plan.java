@@ -65,4 +65,15 @@ public class Plan extends BaseEntity {
     public void setActive(boolean active) {
         this.active = active;
     }
+// ... outros getters e setters ...
+
+    // ADICIONE ESTE MÉTODO:
+    public boolean getActive() {
+        return active;
+    }
+
+    // Mantenha o setActive
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 }

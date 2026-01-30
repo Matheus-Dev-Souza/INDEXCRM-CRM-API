@@ -60,4 +60,15 @@ public class AutomationFlow extends BaseEntity {
     public void setCompany(Company company) {
         this.company = company;
     }
+// ... outros getters e setters ...
+
+    // ADICIONE ESTE MÉTODO:
+    public boolean getActive() {
+        return active;
+    }
+
+    // Mantenha o setActive
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 }
