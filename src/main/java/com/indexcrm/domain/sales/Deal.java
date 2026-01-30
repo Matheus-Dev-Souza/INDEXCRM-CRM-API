@@ -1,47 +1,41 @@
 package com.indexcrm.domain.sales;
 
+import com.indexcrm.domain.BaseEntity;
 import com.indexcrm.domain.saas.Company;
 import com.indexcrm.domain.user.User;
 import jakarta.persistence.*;
-import lombok.Data;
-
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tb_deals")
-@Data
-public class Deal {
+@Table(name = "deals")
+public class Deal extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String name;
-
-    private BigDecimal amount;
-
-    private String status; // OPEN, WON, LOST
-
-    private LocalDate expectedCloseDate;
-
-    // Vinculo opcional com o Lead original
-    @OneToOne
-    @JoinColumn(name = "lead_id")
-    private Lead lead;
-
-    @ManyToOne
-    @JoinColumn(name = "pipeline_id")
-    private Pipeline pipeline;
-
-    @ManyToOne
-    @JoinColumn(name = "company_id")
-    private Company company;
+    private String title;
+    private BigDecimal amount; // O erro chamava isso de 'amount' ou 'value'
+    private String status;     // WON, LOST, OPEN
 
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+    // --- GETTERS E SETTERS ---
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public User getOwner() { return owner; }
+    public void setOwner(User owner) { this.owner = owner; }
+
+    public Company getCompany() { return company; }
+    public void setCompany(Company company) { this.company = company; }
 }

@@ -1,70 +1,70 @@
 package com.indexcrm.domain.sales;
 
+import com.indexcrm.domain.BaseEntity;
 import com.indexcrm.domain.saas.Company;
 import com.indexcrm.domain.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tb_leads")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Lead {
+@Table(name = "leads")
+public class Lead extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    // --- Dados do Negócio ---
     private String title;
-
-    @Column(columnDefinition = "TEXT")
     private String description;
+    private BigDecimal value;
+    private String priority; // Baixa, Media, Alta
 
-    private BigDecimal value; // Melhor usar BigDecimal para dinheiro
+    @NotBlank(message = "O nome é obrigatório")
+    private String customerName;
 
-    private String priority; // LOW, MEDIUM, HIGH
-
-    // --- Dados do Cliente (Contato) ---
-    @Column(name = "customer_name")
-    private String customerName; // O Controller espera este nome exato
-
+    @NotBlank(message = "O email é obrigatório")
     private String email;
 
     private String phone;
 
-    // --- Relacionamentos ---
-
     @ManyToOne
     @JoinColumn(name = "stage_id")
-    private PipelineStage stage; // A fase do funil (Ex: Novo, Em Negociação)
+    private PipelineStage stage;
 
     @ManyToOne
     @JoinColumn(name = "owner_id")
-    private User owner; // Quem criou o lead (Usuario logado)
+    private User owner;
 
     @ManyToOne
     @JoinColumn(name = "company_id")
-    private Company company; // Multi-tenant: O lead pertence a uma empresa
+    private Company company;
 
-    // --- Auditoria ---
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    // --- GETTERS E SETTERS OBRIGATÓRIOS ---
 
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public BigDecimal getValue() { return value; }
+    public void setValue(BigDecimal value) { this.value = value; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
+
+    public String getCustomerName() { return customerName; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public PipelineStage getStage() { return stage; }
+    public void setStage(PipelineStage stage) { this.stage = stage; }
+
+    public User getOwner() { return owner; }
+    public void setOwner(User owner) { this.owner = owner; }
+
+    public Company getCompany() { return company; }
+    public void setCompany(Company company) { this.company = company; }
 }
