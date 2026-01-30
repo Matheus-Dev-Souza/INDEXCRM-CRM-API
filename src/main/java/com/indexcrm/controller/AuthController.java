@@ -32,40 +32,34 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
     
     @Autowired
-    private UserRepository repository; // Repositório de Usuário
+    private UserRepository repository; 
     
     @Autowired
-    private CompanyRepository companyRepository; // Repositório de Empresa
+    private CompanyRepository companyRepository;
     
     @Autowired
     private TokenService tokenService;
     
     @Autowired
-    private UserMapper userMapper; // Para converter User -> UserResponseDTO
+    private UserMapper userMapper;
     
     @Autowired
-    private PipelineService pipelineService; // Para criar o Kanban Padrão
+    private PipelineService pipelineService; 
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO data) {
-        // 1. Autentica usuário e senha (o Spring Security faz a mágica aqui)
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.email(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
-        // 2. Pega o usuário autenticado
         User user = (User) auth.getPrincipal();
-
-        // 3. Gera o Token
         var token = tokenService.generateToken(user);
-
-        // 4. Cria o DTO de resposta com os dados do usuário (correção do erro 'userDto')
         UserResponseDTO userResponse = userMapper.toResponse(user);
 
         return ResponseEntity.ok(new LoginResponseDTO(token, userResponse));
     }
 
     @PostMapping("/register")
-    @Transactional // Garante que cria tudo (Empresa + User + Funil) ou nada
+    @Transactional
     public ResponseEntity<Void> register(@RequestBody @Valid RegisterRequestDTO data) {
         if (this.repository.findByEmail(data.email()) != null) {
             return ResponseEntity.badRequest().build();
@@ -73,27 +67,30 @@ public class AuthController {
 
         // 1. Cria a Empresa (Multi-tenant)
         Company newCompany = new Company();
-        // Usa o nome da empresa se vier no DTO, senão usa o nome do usuário + Company
+        
         String companyName = (data.companyName() != null && !data.companyName().isEmpty()) 
                              ? data.companyName() 
                              : data.name() + " Company";
                              
         newCompany.setName(companyName);
-        newCompany.setPlanType("FREE"); // Plano padrão
+        newCompany.setPlanType("FREE");
         newCompany.setActive(true);
+        // Gera um slug temporário (em produção, faríamos algo mais robusto)
+        newCompany.setSlug(companyName.toLowerCase().replace(" ", "-") + "-" + System.currentTimeMillis());
         
-        this.companyRepository.save(newCompany);
+        // --- CORREÇÃO AQUI: ---
+        // Atribuímos o resultado do save à variável 'savedCompany'
+        Company savedCompany = this.companyRepository.save(newCompany);
 
-        // 2. Cria o Usuário vinculado à Empresa
+        // 2. Cria o Usuário vinculado à Empresa SALVA
         String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
         
-        // Construtor atualizado com a Company
-        User newUser = new User(data.name(), data.email(), encryptedPassword, UserRole.ADMIN, newCompany);
+        // Usamos 'savedCompany' aqui para garantir que o ID já existe
+        User newUser = new User(data.name(), data.email(), encryptedPassword, UserRole.ADMIN, savedCompany);
 
         this.repository.save(newUser);
         
-        // 3. (Importante) Cria o Funil de Vendas Padrão para essa nova empresa
-        // Envie apenas o ID da empresa
+        // 3. Cria o Funil de Vendas Padrão usando o ID da empresa salva
         pipelineService.createDefaultPipeline(savedCompany.getId());
 
         return ResponseEntity.ok().build();
