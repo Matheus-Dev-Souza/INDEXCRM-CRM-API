@@ -1,6 +1,6 @@
 package com.indexcrm.service.sales;
 
-import com.indexcrm.domain.crm.Lead;
+import com.indexcrm.domain.sales.Lead;
 import com.indexcrm.domain.sales.PipelineStage;
 import com.indexcrm.domain.user.User;
 import com.indexcrm.dto.request.CreateLeadDTO;

@@ -1,6 +1,6 @@
 package com.indexcrm.repository.sales;
 
-import com.indexcrm.domain.crm.Lead;
+import com.indexcrm.domain.sales.lead;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
