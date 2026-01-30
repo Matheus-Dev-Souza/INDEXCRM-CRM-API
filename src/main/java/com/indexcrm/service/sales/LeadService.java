@@ -29,6 +29,7 @@ public class LeadService {
                 .orElseThrow(() -> new RuntimeException("Fase não encontrada"));
 
         // 2. Valida Segurança (Multi-tenant)
+        // Nota: Aqui comparamos String com String (UUIDs), então está correto
         if (!stage.getPipeline().getCompany().getId().equals(owner.getCompany().getId())) {
             throw new SecurityException("Você não tem permissão nesta fase.");
         }
@@ -42,11 +43,11 @@ public class LeadService {
         lead.setCustomerName(data.name());
         lead.setEmail(data.email());
         lead.setPhone(data.phone());
-        
+
         lead.setStage(stage);
         lead.setOwner(owner);
         lead.setCompany(owner.getCompany());
-        
+
         // Datas automáticas
         lead.setCreatedAt(LocalDateTime.now());
         lead.setUpdatedAt(LocalDateTime.now());
@@ -54,7 +55,8 @@ public class LeadService {
         return leadRepository.save(lead);
     }
 
-    public List<Lead> getLeadsByCompany(Long companyId) {
+    // CORREÇÃO AQUI: Mudamos de (Long companyId) para (String companyId)
+    public List<Lead> getLeadsByCompany(String companyId) {
         return leadRepository.findByCompanyId(companyId);
     }
 }
