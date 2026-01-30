@@ -3,14 +3,13 @@ package com.indexcrm.repository.sales;
 import com.indexcrm.domain.crm.Lead;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 @Repository
-public interface LeadRepository extends JpaRepository<Lead, String> {
+public interface LeadRepository extends JpaRepository<Lead, Long> {
 
-    // Buscar todos os leads de uma empresa específica (Segurança Multi-tenant)
+    // CORREÇÃO: Mudamos de (Long companyId) para (String companyId)
+    // Pois o ID da Company agora é um UUID (String)
     List<Lead> findByCompanyId(String companyId);
-
-    // Buscar leads de uma fase específica (para montar a coluna do Kanban)
-    List<Lead> findByStageId(String stageId);
 }

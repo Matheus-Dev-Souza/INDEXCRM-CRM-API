@@ -8,7 +8,8 @@ import java.util.List;
 
 @Repository
 public interface AutomationFlowRepository extends JpaRepository<AutomationFlow, Long> {
-    
-    // Busca todos os fluxos de uma empresa específica
-    List<AutomationFlow> findByCompanyId(Long companyId);
+
+    // CORREÇÃO: Mudamos de (Long companyId) para (String companyId)
+    // para bater com o ID da sua Empresa que é UUID.
+    List<AutomationFlow> findByCompanyId(String companyId);
 }

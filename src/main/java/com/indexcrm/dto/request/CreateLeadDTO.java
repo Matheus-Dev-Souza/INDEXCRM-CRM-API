@@ -1,32 +1,24 @@
 package com.indexcrm.dto.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
+// Use 'record' para DTOs (Java 17+)
 public record CreateLeadDTO(
-        // --- DADOS DO CONTATO (Pessoa) ---
-        @NotBlank(message = "O nome do cliente é obrigatório")
-        String name, // Ex: "João Silva"
+        @NotBlank(message = "O nome é obrigatório")
+        String name,
 
-        @Email(message = "Email inválido")
-        String email, // Ex: "joao@gmail.com"
+        @NotBlank(message = "O email é obrigatório")
+        String email,
 
-        @NotBlank(message = "O telefone/whatsapp é obrigatório")
-        String phone, // Ex: "5511999999999" (Importante para sua integração com WhatsApp)
+        String phone,
 
-        // --- DADOS DA OPORTUNIDADE (Negócio) ---
-        @NotBlank(message = "O título do card é obrigatório")
-        String title, // Ex: "Venda de Site Institucional"
+        String title,
+        String description,
+        BigDecimal value,
+        String priority,
 
-        String description, // Detalhes do que foi conversado
-
-        @NotNull(message = "O valor é obrigatório")
-        BigDecimal value, // Quanto vale essa venda?
-
-        String priority, // "HIGH", "MEDIUM", "LOW"
-
-        @NotBlank(message = "O ID da fase (stage) é obrigatório")
-        String stageId // O UUID da coluna onde o card vai entrar
+        @NotNull(message = "O ID da fase é obrigatório")
+        Long stageId // <--- GARANTA QUE ISTO SEJA LONG (Não String)
 ) {}
