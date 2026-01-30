@@ -8,5 +8,8 @@ import java.util.List;
 
 @Repository
 public interface PipelineRepository extends JpaRepository<Pipeline, Long> {
-    List<Pipeline> findByCompanyId(Long companyId);
+
+    // CORREÇÃO: Alterado de (Long companyId) para (String companyId)
+    // Agora aceita o UUID da empresa corretamente.
+    List<Pipeline> findByCompanyId(String companyId);
 }
