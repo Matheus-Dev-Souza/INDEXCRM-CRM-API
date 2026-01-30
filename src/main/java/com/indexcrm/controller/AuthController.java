@@ -93,7 +93,8 @@ public class AuthController {
         this.repository.save(newUser);
         
         // 3. (Importante) Cria o Funil de Vendas Padrão para essa nova empresa
-        pipelineService.createDefaultPipeline(newCompany);
+        // Envie apenas o ID da empresa
+        pipelineService.createDefaultPipeline(savedCompany.getId());
 
         return ResponseEntity.ok().build();
     }
