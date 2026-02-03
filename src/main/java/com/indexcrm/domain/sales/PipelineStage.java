@@ -1,5 +1,6 @@
 package com.indexcrm.domain.sales;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.indexcrm.domain.BaseEntity;
 import jakarta.persistence.*;
 
@@ -8,14 +9,19 @@ import jakarta.persistence.*;
 public class PipelineStage extends BaseEntity {
 
     private String name;
-    private int orderIndex; // A ordem da coluna no Kanban (0, 1, 2...)
+    
+    // CORREÇÃO: Mudamos de 'orderIndex' para 'indexOrder'
+    // para bater com o nome que o Repositório está buscando.
+    private Integer indexOrder; 
+
     private String color;   // Cor da coluna (Ex: #FF0000)
 
     @ManyToOne
     @JoinColumn(name = "pipeline_id")
+    @JsonIgnore // <--- IMPORTANTE: Adicionei isso para evitar erro de Loop Infinito no JSON
     private Pipeline pipeline;
 
-    // --- GETTERS E SETTERS MANUAIS ---
+    // --- GETTERS E SETTERS ATUALIZADOS ---
 
     public String getName() {
         return name;
@@ -25,12 +31,12 @@ public class PipelineStage extends BaseEntity {
         this.name = name;
     }
 
-    public int getOrderIndex() {
-        return orderIndex;
+    public Integer getIndexOrder() {
+        return indexOrder;
     }
 
-    public void setOrderIndex(int orderIndex) {
-        this.orderIndex = orderIndex;
+    public void setIndexOrder(Integer indexOrder) {
+        this.indexOrder = indexOrder;
     }
 
     public String getColor() {

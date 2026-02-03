@@ -1,6 +1,5 @@
 package com.indexcrm.service.sales;
 
-import com.indexcrm.domain.saas.Company;
 import com.indexcrm.domain.sales.Pipeline;
 import com.indexcrm.domain.sales.PipelineStage;
 import com.indexcrm.repository.sales.PipelineRepository;
@@ -9,37 +8,46 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class PipelineService {
 
     @Autowired
     private PipelineRepository pipelineRepository;
-    
+
     @Autowired
     private PipelineStageRepository stageRepository;
 
-    // --- ESTE É O MÉTODO QUE FALTAVA ---
     @Transactional
-    public void createDefaultPipeline(Company company) {
+    public Pipeline createDefaultPipeline(String companyId) {
+        // 1. Cria o Pipeline (Funil)
         Pipeline pipeline = new Pipeline();
         pipeline.setName("Funil de Vendas Padrão");
-        pipeline.setCompany(company);
+        // pipeline.setCompanyId(companyId); // Se tiver esse campo, descomente
         
-        pipelineRepository.save(pipeline);
+        // Salva o pai primeiro
+        Pipeline savedPipeline = pipelineRepository.save(pipeline);
 
-        createStage(pipeline, "Novo Lead", 0, "#3b82f6");
-        createStage(pipeline, "Contato Feito", 1, "#eab308");
-        createStage(pipeline, "Proposta", 2, "#f97316");
-        createStage(pipeline, "Ganho", 3, "#22c55e");
-        createStage(pipeline, "Perdido", 4, "#ef4444");
+        // 2. Cria as Fases Padrão (Stages)
+        createStage(savedPipeline, "Novo Lead", 1, "#3498db");       // Azul
+        createStage(savedPipeline, "Qualificado", 2, "#f1c40f");     // Amarelo
+        createStage(savedPipeline, "Em Negociação", 3, "#e67e22");   // Laranja
+        createStage(savedPipeline, "Ganho", 4, "#2ecc71");           // Verde
+        createStage(savedPipeline, "Perdido", 5, "#e74c3c");         // Vermelho
+
+        return savedPipeline;
     }
 
-    private void createStage(Pipeline p, String name, int order, String color) {
+    private void createStage(Pipeline pipeline, String name, int order, String color) {
         PipelineStage stage = new PipelineStage();
         stage.setName(name);
-        stage.setOrderIndex(order);
+        stage.setPipeline(pipeline);
+        
+        // CORREÇÃO: Mudamos de setOrderIndex para setIndexOrder
+        stage.setIndexOrder(order); 
+        
         stage.setColor(color);
-        stage.setPipeline(p);
         stageRepository.save(stage);
     }
 }

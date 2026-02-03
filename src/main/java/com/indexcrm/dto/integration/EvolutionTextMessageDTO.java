@@ -1,81 +1,48 @@
 package com.indexcrm.dto.integration;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-
-@Data
-@JsonIgnoreProperties(ignoreUnknown = true) // Ignora campos extras que a Evolution manda e a gente não usa
+// DTO para mapear o webhook da Evolution API (Text Message)
 public class EvolutionTextMessageDTO {
 
-    private String type; // Ex: "messages.upsert"
-    private String instance; // Qual instância (número) recebeu
+    private String eventType;
     private DataPayload data;
-    private String sender; // As vezes vem direto na raiz
 
-    // --- CLASSES INTERNAS PARA MAPEAMENTO DO JSON ---
+    public String getEventType() { return eventType; }
+    public void setEventType(String eventType) { this.eventType = eventType; }
 
-    @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
+    public DataPayload getData() { return data; }
+    public void setData(DataPayload data) { this.data = data; }
+
+    // --- CLASSE INTERNA ---
     public static class DataPayload {
-        private Key key;
-        private String pushName; // Nome de exibição do contato (Ex: "Matheus")
-        private MessageContent message;
-        private String messageType; // Ex: "conversation", "extendedTextMessage"
-    }
+        private KeyPayload key;
+        private MessagePayload message;
+        private String pushName;
 
-    @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Key {
-        private String remoteJid; // O número do cliente (Ex: 5588999...@s.whatsapp.net)
-        private boolean fromMe;   // true = eu mandei, false = cliente mandou
-        private String id;        // ID único da mensagem
-    }
+        public KeyPayload getKey() { return key; }
+        public void setKey(KeyPayload key) { this.key = key; }
 
-    @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class MessageContent {
-        // Caso 1: Texto simples
-        private String conversation;
+        public MessagePayload getMessage() { return message; }
+        public void setMessage(MessagePayload message) { this.message = message; }
         
-        // Caso 2: Texto com link ou formatação
-        @JsonAlias("extendedTextMessage") // Aceita vir com esse nome também
-        private ExtendedTextMessage extendedTextMessage;
+        public String getPushName() { return pushName; }
+        public void setPushName(String pushName) { this.pushName = pushName; }
     }
 
-    @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ExtendedTextMessage {
-        private String text; // O texto real quando é extended
+    public static class KeyPayload {
+        private String remoteJid;
+        private boolean fromMe;
+
+        public String getRemoteJid() { return remoteJid; }
+        public void setRemoteJid(String remoteJid) { this.remoteJid = remoteJid; }
+
+        public boolean isFromMe() { return fromMe; }
+        public void setFromMe(boolean fromMe) { this.fromMe = fromMe; }
     }
 
-    // --- MÉTODO UTILITÁRIO (O PULO DO GATO) ---
-    // O WhatsApp manda texto em lugares diferentes dependendo se é iPhone, Android ou se tem link.
-    // Esse método resolve isso e te devolve o texto limpo.
-    public String extractMessageText() {
-        if (data == null || data.getMessage() == null) {
-            return "";
-        }
+    public static class MessagePayload {
+        private String conversation; // Texto simples
 
-        // Tenta pegar texto simples (conversation)
-        if (data.getMessage().getConversation() != null && !data.getMessage().getConversation().isEmpty()) {
-            return data.getMessage().getConversation();
-        }
-
-        // Tenta pegar texto estendido (com links/negrito)
-        if (data.getMessage().getExtendedTextMessage() != null) {
-            return data.getMessage().getExtendedTextMessage().getText();
-        }
-
-        return ""; // Se for áudio, imagem ou sticker, retorna vazio por enquanto
-    }
-    
-    // Método para pegar o telefone formatado (sem o @s.whatsapp.net)
-    public String extractRemoteJid() {
-        if (data != null && data.getKey() != null) {
-            return data.getKey().getRemoteJid();
-        }
-        return null;
+        public String getConversation() { return conversation; }
+        public void setConversation(String conversation) { this.conversation = conversation; }
     }
 }

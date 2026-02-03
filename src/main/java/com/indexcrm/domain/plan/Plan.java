@@ -1,29 +1,79 @@
 package com.indexcrm.domain.plan;
 
-import jakarta.persistence.*;
-import lombok.Data;
-
+import com.indexcrm.domain.BaseEntity;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "tb_plans")
-@Data
-public class Plan {
+@Table(name = "plans")
+public class Plan extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String name; // Ex: "Plano Pro"
-
+    private String name;
+    private BigDecimal price;
     private String description;
+    private int maxUsers;
+    private int maxLeads;
+    private boolean active;
 
-    private BigDecimal price; // Valor mensal
+    // --- GETTERS E SETTERS OBRIGATÓRIOS ---
 
-    // --- Limites do Plano ---
-    private Integer maxUsers; // Quantos usuários a empresa pode ter
-    private Integer maxLeads; // Quantos leads podem cadastrar
-    private Integer maxPipelines;
+    public String getName() {
+        return name;
+    }
 
-    private Boolean active = true;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getMaxUsers() {
+        return maxUsers;
+    }
+
+    public void setMaxUsers(int maxUsers) {
+        this.maxUsers = maxUsers;
+    }
+
+    public int getMaxLeads() {
+        return maxLeads;
+    }
+
+    public void setMaxLeads(int maxLeads) {
+        this.maxLeads = maxLeads;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+// ... outros getters e setters ...
+
+    // ADICIONE ESTE MÉTODO:
+    public boolean getActive() {
+        return active;
+    }
+
+    // Mantenha o setActive
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 }
