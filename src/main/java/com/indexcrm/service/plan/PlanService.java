@@ -22,11 +22,6 @@ public class PlanService {
                 .orElseThrow(() -> new RuntimeException("Plano não encontrado"));
     }
 
-    public Plan createPlan(Plan plan) {
-        // Regra de negócio: Preço não pode ser negativo
-        if (plan.getPrice().doubleValue() < 0) {
-            throw new IllegalArgumentException("O preço do plano não pode ser negativo");
-        }
-        return planRepository.save(plan);
-    }
+
+
 }
