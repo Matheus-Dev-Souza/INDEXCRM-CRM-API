@@ -27,19 +27,23 @@ public class SecurityConfig {
     SecurityFilter securityFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
                 .csrf(csrf -> csrf.disable())
-                // 1. ATIVA O CORS (Essencial para Vercel -> Render)
+                // 1. ATIVA O CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/webhooks/**").permitAll()
-                        .requestMatchers("/").permitAll()
-                        // OBS: Mantemos .authenticated() para /api/sales/leads
-                        // pois seu SalesController exige usuário logado.
+                        .requestMatchers("/actuator/**").permitAll() // Para o Health Check
+
+                        // --- SUAS ROTAS PROTEGIDAS ---
+                        .requestMatchers("/api/sales/**").authenticated()
+                        .requestMatchers("/api/dashboard/**").authenticated()
+                        // -----------------------------
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

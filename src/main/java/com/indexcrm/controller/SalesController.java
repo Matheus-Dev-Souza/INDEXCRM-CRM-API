@@ -29,15 +29,6 @@ public class SalesController {
     public ResponseEntity<?> createLead(@RequestBody @Valid CreateLeadDTO data, Authentication auth) {
         User user = (User) auth.getPrincipal();
 
-        // Agora data.stageId() é Long, então findById aceita tranquilamente
-        PipelineStage stage = stageRepository.findById(data.stageId())
-                .orElseThrow(() -> new RuntimeException("Fase não encontrada"));
-
-        // Verificação de Segurança (IDs da Company comparados como Strings)
-        if (!stage.getPipeline().getCompany().getId().equals(user.getCompany().getId())) {
-            return ResponseEntity.status(403).body("Você não pode adicionar leads nesta fase.");
-        }
-
         Lead lead = new Lead();
         lead.setTitle(data.title());
         lead.setDescription(data.description());
@@ -46,17 +37,30 @@ public class SalesController {
         lead.setCustomerName(data.name());
         lead.setEmail(data.email());
         lead.setPhone(data.phone());
-        lead.setStage(stage);
         lead.setOwner(user);
         lead.setCompany(user.getCompany());
         lead.setCreatedAt(LocalDateTime.now());
         lead.setUpdatedAt(LocalDateTime.now());
 
+        // NOVA ARQUITETURA: Verifica se o Front mandou uma fase
+        if (data.stageId() != null) {
+            PipelineStage stage = stageRepository.findById(data.stageId())
+                    .orElseThrow(() -> new RuntimeException("Fase não encontrada"));
+
+            // Verificação de Segurança
+            if (!stage.getPipeline().getCompany().getId().equals(user.getCompany().getId())) {
+                return ResponseEntity.status(403).body("Você não pode adicionar leads nesta fase.");
+            }
+            lead.setStage(stage);
+        } else {
+            // O Lead fica solto, apenas listado na base de dados
+            lead.setStage(null);
+        }
+
         leadRepository.save(lead);
 
         return ResponseEntity.ok(lead);
     }
-
     @GetMapping("/leads")
     public ResponseEntity<List<Lead>> getMyLeads(Authentication auth) {
         User user = (User) auth.getPrincipal();
